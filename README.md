@@ -248,7 +248,6 @@ Open `dashboard/Amazon_Fraud_Dashboard.pbix` in **Power BI Desktop**, then:
 
 ## 💼 For Recruiters
 
-### Resume Bullets (ATS-Optimized)
 - Designed a **5-page Power BI fraud detection dashboard** analyzing 200K+ Amazon e-commerce transactions, identifying a 38.18% fraud rate and ₹660 Cr revenue exposure across 6 fraud categories
 - Engineered **8+ advanced DAX measures** (Fraud Rate, Risk Score, MoM Change, Revenue Loss) with drill-through navigation, dynamic slicers, and conditional formatting for executive reporting
 - Identified that **COD payment carries 86.7% fraud rate** (3.9× digital payment average), generating actionable policy recommendations to reduce fraud exposure by an estimated 55%
