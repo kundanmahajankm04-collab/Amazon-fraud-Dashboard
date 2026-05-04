@@ -1,0 +1,701 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, 'Segoe UI', sans-serif); }
+
+  :root {
+    --bg: #0f1117;
+    --bg2: #181c27;
+    --bg3: #1e2336;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f2f8;
+    --text2: #8b93b0;
+    --text3: #5a6180;
+    --accent: #FF9900;
+    --accent2: #e67e00;
+    --red: #e84040;
+    --green: #22c55e;
+    --blue: #4a9eff;
+    --purple: #a78bfa;
+    --teal: #2dd4bf;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    --nav-bg: #0a0d14;
+  }
+
+  [data-theme="light"] {
+    --bg: #f5f6fa;
+    --bg2: #ffffff;
+    --bg3: #eef0f7;
+    --border: rgba(0,0,0,0.08);
+    --text: #1a1d2e;
+    --text2: #4a5075;
+    --text3: #8890b0;
+    --nav-bg: #0f1117;
+    --card-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .dashboard { background: var(--bg); min-height: 100vh; color: var(--text); transition: background 0.3s, color 0.3s; }
+
+  .header {
+    background: var(--nav-bg);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  .logo-area { display: flex; align-items: center; gap: 12px; }
+  .amazon-logo {
+    display: flex; align-items: center; gap: 0;
+    font-size: 22px; font-weight: 700; color: #FF9900; letter-spacing: -1px;
+  }
+  .amazon-logo span { color: #ffffff; font-size: 10px; font-weight: 400; margin-left: 8px; letter-spacing: 0.5px; color: #8b93b0; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  .theme-toggle {
+    width: 36px; height: 20px; border-radius: 10px;
+    background: #2a2f45; border: 1px solid rgba(255,255,255,0.12);
+    cursor: pointer; position: relative; transition: background 0.3s;
+    display: flex; align-items: center; padding: 2px;
+  }
+  [data-theme="light"] .theme-toggle { background: #dde1f0; border-color: rgba(0,0,0,0.12); }
+  .toggle-knob {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); transition: transform 0.25s; font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  [data-theme="light"] .toggle-knob { transform: translateX(16px); }
+  .toggle-icon { font-size: 10px; line-height: 1; }
+
+  .live-badge { background: rgba(34,197,94,0.15); color: #22c55e; font-size: 10px; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(34,197,94,0.2); }
+
+  .nav-tabs {
+    display: flex; gap: 2px; padding: 12px 24px 0;
+    border-bottom: 1px solid var(--border); background: var(--bg2);
+  }
+  .nav-tab {
+    padding: 8px 16px; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--text3); border-bottom: 2px solid transparent;
+    transition: all 0.2s; border-radius: 4px 4px 0 0; letter-spacing: 0.3px;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .content { padding: 20px 24px; max-width: 1400px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; position: relative; overflow: hidden;
+  }
+  .kpi-label { font-size: 11px; color: var(--text3); font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .kpi-value { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .kpi-sub { font-size: 11px; color: var(--text3); }
+  .kpi-indicator { font-size: 11px; font-weight: 600; }
+  .kpi-indicator.up { color: var(--red); }
+  .kpi-indicator.down { color: var(--green); }
+  .kpi-accent { position: absolute; top: 0; right: 0; width: 3px; height: 100%; border-radius: 0 10px 10px 0; }
+
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .charts-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .charts-row-full { margin-bottom: 16px; }
+  .chart-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+  }
+  .chart-title { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 14px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .chart-wrap { position: relative; width: 100%; }
+
+  .insight-box {
+    background: rgba(255,153,0,0.07); border: 1px solid rgba(255,153,0,0.2);
+    border-left: 3px solid var(--accent); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--text2); margin-top: 10px;
+  }
+  .insight-icon { color: var(--accent); font-weight: 700; margin-right: 6px; }
+
+  .risk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .risk-table th { padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+  .risk-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .risk-table tr:hover td { background: var(--bg3); }
+  .risk-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  }
+  .risk-high { background: rgba(232,64,64,0.15); color: #e84040; }
+  .risk-med { background: rgba(255,153,0,0.15); color: #FF9900; }
+  .risk-low { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .score-bar { height: 4px; border-radius: 2px; background: var(--bg3); margin-top: 4px; }
+  .score-fill { height: 100%; border-radius: 2px; }
+
+  .slicer-bar {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center;
+  }
+  .slicer-label { font-size: 10px; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .slicer-btn {
+    padding: 5px 12px; font-size: 11px; border-radius: 5px; border: 1px solid var(--border);
+    background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.2s;
+  }
+  .slicer-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .slicer-btn.active { background: rgba(255,153,0,0.12); border-color: var(--accent); color: var(--accent); }
+
+  .page-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .page-title-dot { width: 4px; height: 14px; background: var(--accent); border-radius: 2px; }
+
+  .fraud-type-list { display: flex; flex-direction: column; gap: 8px; }
+  .fraud-type-row { display: flex; align-items: center; gap: 8px; }
+  .fraud-type-name { font-size: 11px; color: var(--text2); width: 140px; flex-shrink: 0; }
+  .fraud-type-bar-bg { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; }
+  .fraud-type-bar { height: 100%; border-radius: 3px; }
+  .fraud-type-val { font-size: 11px; color: var(--text); font-weight: 600; width: 50px; text-align: right; }
+
+  .geo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .header-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); }
+</style>
+
+<h2 class="sr-only">Amazon E-commerce Fraud Detection & Risk Analytics Dashboard — 200,000 transactions analyzed, 38.18% fraud rate detected</h2>
+
+<div class="dashboard" id="dash">
+  <div class="header">
+    <div class="logo-area">
+      <div class="amazon-logo">
+        amazon
+        <svg width="28" height="10" viewBox="0 0 70 24" style="margin-top:2px;margin-left:2px"><path d="M3 17 Q35 24 67 17" stroke="#FF9900" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        <span>Fraud Intelligence</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="live-badge">&#9679; LIVE</span>
+      <div class="header-divider"></div>
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" aria-label="Toggle dark/light mode">
+        <div class="toggle-knob">
+          <span class="toggle-icon" id="themeIcon">&#9790;</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage(0,this)">Overview</div>
+    <div class="nav-tab" onclick="showPage(1,this)">Fraud Analysis</div>
+    <div class="nav-tab" onclick="showPage(2,this)">User Risk</div>
+    <div class="nav-tab" onclick="showPage(3,this)">Geographic</div>
+    <div class="nav-tab" onclick="showPage(4,this)">Behavior</div>
+  </div>
+
+  <div class="content">
+
+    <!-- PAGE 1: OVERVIEW -->
+    <div class="page active" id="page0">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-accent" style="background:var(--blue)"></div>
+          <div class="kpi-label">Total Transactions</div>
+          <div class="kpi-value" style="color:var(--text)">200,000</div>
+          <div class="kpi-sub">Jan – May 2025 &nbsp; <span class="kpi-indicator down">&#9650; +12.3%</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-accent" style="background:var(--red)"></div>
+          <div class="kpi-label">Fraud Transactions</div>
+          <div class="kpi-value" style="color:var(--red)">76,365</div>
+          <div class="kpi-sub">Detected &nbsp; <span class="kpi-indicator up">&#9650; High Alert</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-accent" style="background:var(--accent)"></div>
+          <div class="kpi-label">Fraud Rate</div>
+          <div class="kpi-value" style="color:var(--accent)">38.18%</div>
+          <div class="kpi-sub">Well above 2% baseline &nbsp; <span class="kpi-indicator up">&#9650; Critical</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-accent" style="background:var(--red)"></div>
+          <div class="kpi-label">Estimated Revenue Loss</div>
+          <div class="kpi-value" style="color:var(--red)">&#8377;660 Cr</div>
+          <div class="kpi-sub">Total fraud value &nbsp; <span class="kpi-indicator up">&#9650; &#8377;6,600 Cr annualized</span></div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Fraud vs Legitimate Transactions</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="donutChart" role="img" aria-label="Donut chart: 61.82% legitimate, 38.18% fraud">Legitimate: 123,635 (61.82%), Fraud: 76,365 (38.18%)</canvas>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--text2)">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#22c55e;display:inline-block"></span>Legitimate 61.82%</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#e84040;display:inline-block"></span>Fraud 38.18%</span>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Monthly Fraud Trend</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="lineChart" role="img" aria-label="Line chart of monthly fraud counts Jan-May 2025">Jan:16901, Feb:15600, Mar:16944, Apr:16558, May:10362</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">&#9650;</span>March 2025 recorded peak fraud (16,944 cases) — driven by high COD volumes and odd-hour transactions.</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Fraud by Payment Method</div>
+          <div class="chart-wrap" style="height:180px">
+            <canvas id="payBar" role="img" aria-label="Bar chart of fraud rate by payment method: COD 86.7%, Card 22.2%, UPI 22%, Wallet 22.1%">COD: 86.7%, Card: 22.2%, UPI: 22%, Wallet: 22.1%</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>COD carries a <strong>86.7%</strong> fraud rate — nearly 4× higher than digital payments.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Fraud Type Distribution</div>
+          <div class="fraud-type-list" style="margin-top:8px">
+            <div class="fraud-type-row"><span class="fraud-type-name">COD High Value</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:100%;background:#e84040"></div></div><span class="fraud-type-val">42,235</span></div>
+            <div class="fraud-type-row"><span class="fraud-type-name">High Value Odd Hour</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:71%;background:#FF9900"></div></div><span class="fraud-type-val">30,132</span></div>
+            <div class="fraud-type-row"><span class="fraud-type-name">Multiple Accounts</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:2.4%;background:#a78bfa"></div></div><span class="fraud-type-val">1,023</span></div>
+            <div class="fraud-type-row"><span class="fraud-type-name">Fake Return</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:2.4%;background:#4a9eff"></div></div><span class="fraud-type-val">1,002</span></div>
+            <div class="fraud-type-row"><span class="fraud-type-name">Suspicious Location</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:2.3%;background:#2dd4bf"></div></div><span class="fraud-type-val">995</span></div>
+            <div class="fraud-type-row"><span class="fraud-type-name">Payment Fraud</span><div class="fraud-type-bar-bg"><div class="fraud-type-bar" style="width:2.3%;background:#f59e0b"></div></div><span class="fraud-type-val">978</span></div>
+          </div>
+          <div class="insight-box" style="margin-top:12px"><span class="insight-icon">!</span>2 fraud types account for 94.8% of all cases — COD High Value + High Value Odd Hour.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2: FRAUD ANALYSIS -->
+    <div class="page" id="page1">
+      <div class="slicer-bar">
+        <span class="slicer-label">Category</span>
+        <button class="slicer-btn active">All</button>
+        <button class="slicer-btn" onclick="filterCat(this,'Electronics')">Electronics</button>
+        <button class="slicer-btn" onclick="filterCat(this,'Fashion')">Fashion</button>
+        <button class="slicer-btn" onclick="filterCat(this,'Home')">Home</button>
+        <button class="slicer-btn" onclick="filterCat(this,'Beauty')">Beauty</button>
+        <button class="slicer-btn" onclick="filterCat(this,'Sports')">Sports</button>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Fraud Rate by Payment Method (%)</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="payFraudBar" role="img" aria-label="Horizontal bar chart: COD 86.7%, Wallet 22.1%, Card 22.2%, UPI 22%">COD highest at 86.7%</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>COD payment method is 3.9× more fraud-prone than any digital method. Immediate policy intervention recommended.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Fraud Rate by Category (%)</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="catBar" role="img" aria-label="Bar chart of fraud rate by category: all categories near 38%">Sports 38.3%, Fashion 38.3%, Electronics 38.2%, Home 38%, Beauty 38%</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>Fraud is uniformly distributed across all categories — indicating systemic payment-level fraud rather than category-specific targeting.</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Fraud by Device Type</div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="devDonut" role="img" aria-label="Donut chart: Mobile 38.2% fraud, Desktop 38.1% fraud">Mobile: 38.2%, Desktop: 38.1%</canvas>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--text2)">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#4a9eff;display:inline-block"></span>Desktop 38.1%</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#a78bfa;display:inline-block"></span>Mobile 38.2%</span>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>Fraud rate is near-identical across devices — fraud is not device-opportunistic but structurally embedded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Amount Bucket vs Fraud Rate (%)</div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="bucketBar" role="img" aria-label="Bar chart: low amount orders have 2% fraud, high amounts near 45%">Under 10K: 2%, 10K-50K: 37.3%, 50K+: ~45%</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>Orders above &#8377;10K show 22× more fraud than sub-&#8377;10K orders — high-value transaction screening is critical.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 3: USER RISK -->
+    <div class="page" id="page2">
+      <div class="charts-row">
+        <div class="chart-card" style="grid-column:1/-1">
+          <div class="chart-title">Top High-Risk Users — Risk Profiling</div>
+          <table class="risk-table">
+            <thead>
+              <tr>
+                <th>User ID</th>
+                <th>Fraud Transactions</th>
+                <th>Total Transactions</th>
+                <th>Risk Score</th>
+                <th>Risk Level</th>
+                <th>Score Viz</th>
+              </tr>
+            </thead>
+            <tbody id="riskTableBody"></tbody>
+          </table>
+          <div class="insight-box" style="margin-top:12px"><span class="insight-icon">!</span>Users with 100% fraud rate (all transactions flagged) represent definitive synthetic/bot accounts requiring immediate suspension.</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Risk Score Distribution</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="riskHist" role="img" aria-label="Histogram of user risk scores">Risk score distribution across users</canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Fraud by User Segment</div>
+          <div class="chart-wrap" style="height:220px">
+            <canvas id="segBar" role="img" aria-label="Bar chart of fraud by user segment">High risk users contribute most fraud</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>High-risk users (score 80-100) generate 3× more fraud per transaction than average users.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 4: GEOGRAPHIC -->
+    <div class="page" id="page3">
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Top Fraud Cities (Absolute Count)</div>
+          <div class="chart-wrap" style="height:280px">
+            <canvas id="cityBar" role="img" aria-label="Horizontal bar chart of fraud by city">Top cities by fraud transaction count</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>City_356 leads with 182 fraud cases — tier-2 and tier-3 city codes show disproportionately high fraud concentrations.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Fraud Intensity Map (City Bubbles)</div>
+          <div style="background:var(--bg3);border-radius:8px;padding:16px;height:280px;display:flex;flex-direction:column;justify-content:space-between">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Relative fraud intensity by city code</div>
+            <svg viewBox="0 0 360 200" width="100%" height="180">
+              <rect width="360" height="200" fill="none"/>
+              <text x="180" y="105" text-anchor="middle" fill="rgba(255,153,0,0.08)" font-size="48" font-weight="700">INDIA</text>
+              <circle cx="170" cy="80" r="14" fill="rgba(232,64,64,0.7)" opacity="0.9"/>
+              <text x="170" y="84" text-anchor="middle" fill="#fff" font-size="7">C_356</text>
+              <circle cx="200" cy="110" r="13.5" fill="rgba(232,64,64,0.65)" opacity="0.9"/>
+              <text x="200" y="114" text-anchor="middle" fill="#fff" font-size="7">C_97</text>
+              <circle cx="140" cy="120" r="13.3" fill="rgba(232,64,64,0.6)" opacity="0.9"/>
+              <text x="140" y="124" text-anchor="middle" fill="#fff" font-size="7">C_385</text>
+              <circle cx="230" cy="85" r="13" fill="rgba(255,153,0,0.7)" opacity="0.9"/>
+              <text x="230" y="89" text-anchor="middle" fill="#fff" font-size="7">C_235</text>
+              <circle cx="120" cy="90" r="13" fill="rgba(255,153,0,0.65)" opacity="0.9"/>
+              <text x="120" y="94" text-anchor="middle" fill="#fff" font-size="7">C_76</text>
+              <circle cx="260" cy="130" r="12.8" fill="rgba(255,153,0,0.6)" opacity="0.9"/>
+              <text x="260" y="134" text-anchor="middle" fill="#fff" font-size="7">C_134</text>
+              <circle cx="155" cy="150" r="12.8" fill="rgba(74,158,255,0.65)" opacity="0.9"/>
+              <text x="155" y="154" text-anchor="middle" fill="#fff" font-size="7">C_42</text>
+              <circle cx="290" cy="100" r="12.5" fill="rgba(74,158,255,0.6)" opacity="0.9"/>
+              <text x="290" y="104" text-anchor="middle" fill="#fff" font-size="7">C_351</text>
+              <circle cx="95" cy="150" r="12.3" fill="rgba(74,158,255,0.55)" opacity="0.9"/>
+              <text x="95" y="154" text-anchor="middle" fill="#fff" font-size="7">C_494</text>
+              <circle cx="210" cy="155" r="12" fill="rgba(74,158,255,0.5)" opacity="0.9"/>
+              <text x="210" y="159" text-anchor="middle" fill="#fff" font-size="7">C_130</text>
+              <text x="10" y="185" fill="rgba(232,64,64,0.8)" font-size="8">&#9679; High (175+)</text>
+              <text x="80" y="185" fill="rgba(255,153,0,0.8)" font-size="8">&#9679; Medium (174-178)</text>
+              <text x="185" y="185" fill="rgba(74,158,255,0.8)" font-size="8">&#9679; Lower (170-173)</text>
+            </svg>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>High-density fraud clusters appear across dispersed city codes — pointing to coordinated bot networks, not localized patterns.</div>
+        </div>
+      </div>
+
+      <div class="chart-card charts-row-full">
+        <div class="chart-title">City Fraud Comparison — Top 10</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="cityLineBar" role="img" aria-label="Bar chart comparing fraud counts across top 10 cities">City fraud distribution</canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: BEHAVIOR -->
+    <div class="page" id="page4">
+      <div class="charts-row-full chart-card" style="margin-bottom:16px">
+        <div class="chart-title">Fraud by Transaction Hour (0–23)</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="hourLine" role="img" aria-label="Line chart of fraud by hour 0-23: relatively flat around 3150-3260 cases per hour">Fraud spread across all hours with slight peaks at 11pm-12am</canvas>
+        </div>
+        <div class="insight-box"><span class="insight-icon">!</span>Fraud is sustained 24/7 with slight peaks at 11AM, 9PM and 3PM — indicating automated bot-driven fraud, not opportunistic human behavior.</div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Transaction Amount Distribution</div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="amtHist" role="img" aria-label="Histogram of transaction amounts by fraud status">Transaction amount distribution fraud vs legitimate</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>Fraudulent transactions average &#8377;86,433 — 26.8% higher than legitimate avg of &#8377;68,160.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg Transaction Value — Fraud vs Legitimate</div>
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="avgBar" role="img" aria-label="Bar chart comparing avg transaction value fraud vs legit">Fraud avg 86433, Legit avg 68160</canvas>
+          </div>
+          <div class="insight-box"><span class="insight-icon">!</span>High-value fraud orders (100K-200K range) maintain 44.6% fraud rate — aggressive value-based triggers required.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let isDark = true;
+
+function getThemeColors() {
+  return {
+    text: isDark ? '#8b93b0' : '#4a5075',
+    grid: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
+    bg2: isDark ? '#181c27' : '#ffffff'
+  };
+}
+
+function toggleTheme() {
+  isDark = !isDark;
+  const dash = document.getElementById('dash');
+  const icon = document.getElementById('themeIcon');
+  if (isDark) {
+    dash.removeAttribute('data-theme');
+    icon.innerHTML = '&#9790;';
+  } else {
+    dash.setAttribute('data-theme', 'light');
+    icon.innerHTML = '&#9728;';
+  }
+  updateCharts();
+}
+
+function showPage(idx, el) {
+  document.querySelectorAll('.page').forEach((p,i) => p.classList.toggle('active', i===idx));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function filterCat(btn, cat) {
+  document.querySelectorAll('.slicer-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const charts = {};
+
+function makeChart(id, config) {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx, config);
+}
+
+function updateCharts() {
+  const tc = getThemeColors();
+  Object.values(charts).forEach(c => {
+    if (c.options.scales) {
+      Object.values(c.options.scales).forEach(s => {
+        if (s.ticks) s.ticks.color = tc.text;
+        if (s.grid) s.grid.color = tc.grid;
+      });
+    }
+    if (c.options.plugins && c.options.plugins.legend && c.options.plugins.legend.labels)
+      c.options.plugins.legend.labels.color = tc.text;
+    c.update();
+  });
+}
+
+function baseOpts(extra) {
+  const tc = getThemeColors();
+  return Object.assign({
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: isDark ? '#1e2336' : '#fff',
+        titleColor: isDark ? '#f0f2f8' : '#1a1d2e',
+        bodyColor: isDark ? '#8b93b0' : '#4a5075',
+        borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        borderWidth: 1,
+        padding: 10
+      }
+    },
+    scales: {
+      x: { ticks: { color: tc.text, font: { size: 11 } }, grid: { color: tc.grid } },
+      y: { ticks: { color: tc.text, font: { size: 11 } }, grid: { color: tc.grid } }
+    }
+  }, extra);
+}
+
+function initCharts() {
+  const tc = getThemeColors();
+
+  makeChart('donutChart', {
+    type: 'doughnut',
+    data: {
+      labels: ['Legitimate', 'Fraud'],
+      datasets: [{ data: [123635, 76365], backgroundColor: ['#22c55e', '#e84040'], borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.label + ': ' + c.parsed.toLocaleString() + ' (' + (c.parsed/200000*100).toFixed(2) + '%)' } } } }
+  });
+
+  makeChart('lineChart', {
+    type: 'line',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May'],
+      datasets: [{
+        data: [16901, 15600, 16944, 16558, 10362],
+        borderColor: '#FF9900', backgroundColor: 'rgba(255,153,0,0.08)',
+        tension: 0.4, fill: true, pointRadius: 5, pointBackgroundColor: '#FF9900',
+        pointBorderColor: isDark ? '#181c27' : '#fff', pointBorderWidth: 2
+      }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v.toLocaleString() }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('payBar', {
+    type: 'bar',
+    data: {
+      labels: ['COD','Card','UPI','Wallet'],
+      datasets: [{ data: [86.7, 22.2, 22.0, 22.1], backgroundColor: ['#e84040','#4a9eff','#2dd4bf','#a78bfa'], borderRadius: 4, barPercentage: 0.6 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v + '%' }, grid: { color: tc.grid }, max: 100 } } })
+  });
+
+  makeChart('payFraudBar', {
+    type: 'bar',
+    data: {
+      labels: ['COD','Card','Wallet','UPI'],
+      datasets: [{ data: [86.7, 22.2, 22.1, 22.0], backgroundColor: ['#e84040','#4a9eff','#a78bfa','#2dd4bf'], borderRadius: 4, barPercentage: 0.55 }]
+    },
+    options: baseOpts({ indexAxis: 'y', scales: { x: { ticks: { color: tc.text, callback: v => v + '%' }, grid: { color: tc.grid }, max: 100 }, y: { ticks: { color: tc.text }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('catBar', {
+    type: 'bar',
+    data: {
+      labels: ['Sports','Fashion','Electronics','Home','Beauty'],
+      datasets: [{ data: [38.3, 38.3, 38.2, 38.0, 38.0], backgroundColor: ['#FF9900','#4a9eff','#2dd4bf','#a78bfa','#22c55e'], borderRadius: 4, barPercentage: 0.55 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v + '%' }, grid: { color: tc.grid }, min: 37, max: 39 } } })
+  });
+
+  makeChart('devDonut', {
+    type: 'doughnut',
+    data: {
+      labels: ['Desktop', 'Mobile'],
+      datasets: [{ data: [38226, 38139], backgroundColor: ['#4a9eff', '#a78bfa'], borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => c.label + ': ' + c.parsed.toLocaleString() + ' fraud transactions' } } } }
+  });
+
+  makeChart('bucketBar', {
+    type: 'bar',
+    data: {
+      labels: ['<10K','10K-50K','50K-100K','100K-200K','200K+'],
+      datasets: [{ data: [2.0, 37.3, 44.8, 44.6, 44.9], backgroundColor: ['#22c55e','#f59e0b','#FF9900','#e84040','#a32d2d'], borderRadius: 4, barPercentage: 0.6 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text, font: { size: 10 } }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v + '%' }, grid: { color: tc.grid }, max: 55 } } })
+  });
+
+  const topUsers = [
+    { id: 2355, fraud: 9, total: 9, score: 100 },
+    { id: 44946, fraud: 9, total: 11, score: 82 },
+    { id: 2063, fraud: 8, total: 9, score: 89 },
+    { id: 35930, fraud: 9, total: 12, score: 75 },
+    { id: 40511, fraud: 9, total: 12, score: 75 },
+    { id: 2814, fraud: 8, total: 10, score: 80 },
+    { id: 26474, fraud: 8, total: 10, score: 80 },
+    { id: 43802, fraud: 9, total: 13, score: 69 },
+    { id: 20078, fraud: 8, total: 11, score: 73 },
+    { id: 13537, fraud: 8, total: 14, score: 57 }
+  ];
+  const tbody = document.getElementById('riskTableBody');
+  if (tbody) {
+    tbody.innerHTML = topUsers.map(u => {
+      const lvl = u.score >= 80 ? 'high' : u.score >= 60 ? 'med' : 'low';
+      const lblMap = { high: 'High Risk', med: 'Medium Risk', low: 'Lower Risk' };
+      const color = u.score >= 80 ? '#e84040' : u.score >= 60 ? '#FF9900' : '#22c55e';
+      return `<tr>
+        <td style="font-weight:600;color:var(--text)">USR-${u.id}</td>
+        <td style="color:#e84040;font-weight:600">${u.fraud}</td>
+        <td>${u.total}</td>
+        <td style="font-weight:700;color:${color}">${u.score}</td>
+        <td><span class="risk-badge risk-${lvl}">${lblMap[lvl]}</span></td>
+        <td style="width:100px"><div class="score-bar"><div class="score-fill" style="width:${u.score}%;background:${color}"></div></div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  makeChart('riskHist', {
+    type: 'bar',
+    data: {
+      labels: ['0-20','21-40','41-60','61-80','81-100'],
+      datasets: [{ data: [12200, 9800, 7400, 4100, 1200], backgroundColor: ['#22c55e','#2dd4bf','#f59e0b','#FF9900','#e84040'], borderRadius: 4 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v.toLocaleString() }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('segBar', {
+    type: 'bar',
+    data: {
+      labels: ['Occasional (1-2)','Regular (3-5)','Frequent (6-8)','Power (9+)'],
+      datasets: [{ data: [18.2, 32.5, 74.6, 87.3], backgroundColor: ['#22c55e','#f59e0b','#FF9900','#e84040'], borderRadius: 4, barPercentage: 0.6 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text, font: { size: 10 } }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v + '%' }, grid: { color: tc.grid }, max: 100 } } })
+  });
+
+  const cities = ['C_356','C_97','C_385','C_235','C_76','C_134','C_42','C_351','C_494','C_130'];
+  const cityVals = [182, 180, 179, 178, 178, 177, 177, 175, 174, 173];
+
+  makeChart('cityBar', {
+    type: 'bar',
+    data: {
+      labels: cities,
+      datasets: [{ data: cityVals, backgroundColor: cities.map((c,i) => i < 3 ? '#e84040' : i < 6 ? '#FF9900' : '#4a9eff'), borderRadius: 4, barPercentage: 0.6 }]
+    },
+    options: baseOpts({ indexAxis: 'y', scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, font: { size: 10 } }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('cityLineBar', {
+    type: 'bar',
+    data: {
+      labels: cities,
+      datasets: [{ data: cityVals, backgroundColor: 'rgba(255,153,0,0.7)', borderColor: '#FF9900', borderWidth: 1, borderRadius: 3, barPercentage: 0.65 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text, font: { size: 10 } }, grid: { color: tc.grid } }, y: { min: 168, ticks: { color: tc.text }, grid: { color: tc.grid } } } })
+  });
+
+  const hours = Array.from({length:24},(_,i)=>i);
+  const hourData = [3189,3185,3179,3129,3197,3155,3176,3161,3172,3193,3121,3263,3210,3159,3223,3213,3216,3203,3154,3125,3168,3252,3132,3190];
+  makeChart('hourLine', {
+    type: 'line',
+    data: {
+      labels: hours.map(h => h===0?'12AM':h<12?h+'AM':h===12?'12PM':(h-12)+'PM'),
+      datasets: [{
+        data: hourData, borderColor: '#4a9eff', backgroundColor: 'rgba(74,158,255,0.06)',
+        tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#4a9eff',
+        borderWidth: 2
+      }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text, font: { size: 9 }, maxRotation: 45 }, grid: { color: tc.grid } }, y: { min: 3000, ticks: { color: tc.text, callback: v => v.toLocaleString() }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('amtHist', {
+    type: 'bar',
+    data: {
+      labels: ['<10K','10K-50K','50K-100K','100K-200K','200K+'],
+      datasets: [
+        { label: 'Fraud', data: [364, 27331, 23087, 21947, 3636], backgroundColor: 'rgba(232,64,64,0.7)', borderRadius: 2, barPercentage: 0.8 },
+        { label: 'Legit', data: [17469, 46000, 28427, 27283, 4456], backgroundColor: 'rgba(34,197,94,0.5)', borderRadius: 2, barPercentage: 0.8 }
+      ]
+    },
+    options: baseOpts({ plugins: { legend: { display: false }, tooltip: {} }, scales: { x: { ticks: { color: tc.text, font: { size: 10 } }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => v.toLocaleString() }, grid: { color: tc.grid } } } })
+  });
+
+  makeChart('avgBar', {
+    type: 'bar',
+    data: {
+      labels: ['Avg Fraud Amount', 'Avg Legit Amount'],
+      datasets: [{ data: [86433, 68160], backgroundColor: ['#e84040','#22c55e'], borderRadius: 6, barPercentage: 0.5 }]
+    },
+    options: baseOpts({ scales: { x: { ticks: { color: tc.text }, grid: { color: tc.grid } }, y: { ticks: { color: tc.text, callback: v => '₹' + (v/1000).toFixed(0) + 'K' }, grid: { color: tc.grid } } } })
+  });
+}
+
+window.onload = initCharts;
+</script>
