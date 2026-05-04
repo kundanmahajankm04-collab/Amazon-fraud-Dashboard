@@ -1,7 +1,3 @@
-# Amazon-fraud-Dashboard
-Amazon E-Commerce Fraud Detection &amp; Risk Analytics — Power BI + Python + DAX | 200K Transactions
-<div align="center">
-
 <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" width="120" alt="Amazon Logo"/>
 
 # 🛡️ Amazon E-Commerce Fraud Detection & Risk Analytics
